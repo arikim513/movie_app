@@ -1,67 +1,59 @@
 import React from "react";
-import PropTypes from "prop-types";
+import axios from "axios";
+import Movie from "./Movie";
+import "./App.css";
 
-const foodILike = [
-  {
-    id: 1,
-    name: "meat",
-    rating: 5,
-    image:
-      "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRNbA6RuTaiEYjdeny20Kyu4QW3IaWc6RWyVrq57qz6-No1ypee&s"
-  },
-  {
-    id: 2,
-    name: "ramen",
-    rating: 1,
-    image:
-      "https://cookingwithdog.com/wp-content/uploads/2017/11/yakibuta-ramen-00.jpg"
-  },
-  {
-    id: 3,
-    name: "beef",
-    rating: 3,
-    image:
-      "https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/peppercorn-beef-tenderloin-horseradish-cream-sauce-ghk-1543265941.jpg?crop=0.999687597625742xw:1xh;center,top&resize=480:*"
-  },
-  {
-    id: 4,
-    name: "chicken",
-    rating: 4.5,
-    image:
-      "https://hips.hearstapps.com/ghk.h-cdn.co/assets/16/29/1469132118-ghk-0816-buttermilk-fried-chicken.jpg?crop=0.500xw:1.00xh;0.162xw,0&resize=480:*"
+class App extends React.Component {
+  state = {
+    isLoding: true,
+    movies: []
+  };
+
+  getMovies = async () => {
+    // const movies -> resronseが丸ごと格納される。良くない。
+    const {
+      data: {
+        data: { movies }
+      }
+    } = await axios.get(
+      "https://yts-proxy.now.sh/list_movies.json?sort_by=rating"
+    );
+    console.log(movies);
+    // this.setState({ movies: movies});
+    //es6!!
+    this.setState({ movies, isLoding: false });
+  };
+
+  componentDidMount() {
+    this.getMovies();
   }
-];
 
-function Food({ fav, picture, rating }) {
-  return (
-    <div>
-      <h2>I like {fav}</h2>
-      <h2>{rating}/5.0</h2>
-      <img src={picture} alt={fav + " image"}></img>
-    </div>
-  );
-}
-
-Food.propTypes = {
-  fav: PropTypes.string.isRequired,
-  picture: PropTypes.string.isRequired,
-  rating: PropTypes.number.isRequired
-};
-
-function App() {
-  return (
-    <div>
-      {foodILike.map(food => (
-        <Food
-          key={food.id}
-          fav={food.name}
-          picture={food.image}
-          rating={food.rating}
-        />
-      ))}
-      ;
-    </div>
-  );
+  render() {
+    const { isLoding, movies } = this.state;
+    return (
+      <section className="container">
+        {isLoding ? (
+          <div className="loader">
+            <span className="loader__text">"Loding..."</span>
+          </div>
+        ) : (
+          <div className="movies">
+            {movies.map(movie => (
+              <Movie
+                key={movie.id}
+                id={movie.id}
+                year={movie.year}
+                title={movie.title}
+                summary={movie.summary}
+                poster={movie.medium_cover_image}
+                genres={movie.genres}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    );
+  }
 }
 
 export default App;
